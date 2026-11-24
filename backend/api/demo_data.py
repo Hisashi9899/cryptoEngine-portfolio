@@ -7,13 +7,15 @@ developed and previewed without a live exchange connection or a database.
 空データを返す（実データは Binance WS / DB から供給される）。
 """
 
+import os
 import random
 from datetime import datetime
 
 # デモデータ生成を無効化するフラグ。
 # 本番検証時は False にすることで、シグナル・約定・バランス等のデモ値を
 # 出さない（削除はせず、空データを返すだけ）。
-_DEMO_ENABLED = False
+# Local preview: set DEMO_DATA_ENABLED=1. Production/default: unset or 0.
+_DEMO_ENABLED = os.environ.get("DEMO_DATA_ENABLED", "").strip() == "1"
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "SOLUSDT", "ADAUSDT"]
 

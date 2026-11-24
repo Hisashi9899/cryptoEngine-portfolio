@@ -10,6 +10,31 @@ The project is intentionally opinionated about reliability: the execution loop o
 
 > **Portfolio snapshot.** This public repository has been sanitized: no exchange credentials, account data, private keys, webhook URLs, or production host identifiers are included. Live execution is disabled by default. It is published for technical evaluation only; see [LICENSE](LICENSE).
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/login-3d.webp" alt="CryptoEngine login with 3D engine visual" width="760">
+</p>
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/dashboard.webp" alt="Dashboard overview" width="420"></td>
+    <td><img src="docs/screenshots/signals.webp" alt="Signal log" width="420"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Dashboard — paper balance, signals, API latency, market weather</sub></td>
+    <td align="center"><sub>Signal log — 40 demo signals with confidence and reasons</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/ci-success.webp" alt="GitHub Actions CI success" width="840">
+  <br>
+  <sub>CI — Go core tests and Python API tests on every push</sub>
+</p>
+
+> Screenshots use deterministic demo data (`DEMO_DATA_ENABLED=1`), not a live account.
+
 ---
 
 ## Project Overview
@@ -321,7 +346,7 @@ curl -s http://localhost:8000/health
 open http://localhost:3001
 ```
 
-If PostgreSQL is empty or unreachable, the API falls back to deterministic demo data so the dashboard is still useful. The API also falls back to local/demo paths when the gRPC core is not running; in the demo stack the core container is intentionally idle so you can invoke CLI commands directly.
+If PostgreSQL is empty or unreachable, the API falls back to deterministic demo data so the dashboard is still useful. To enable that sample data explicitly, set `DEMO_DATA_ENABLED=1` in `infra/config/.env` (local preview only; the default is `0` and it must stay `0` in production). The API also falls back to local/demo paths when the gRPC core is not running; in the demo stack the core container is intentionally idle so you can invoke CLI commands directly.
 
 ### 4. Run the engine in dry-run
 
