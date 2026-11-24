@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isLoggedIn, refreshAccessToken } from "@/lib/http";
+import { DEMO_MODE } from "@/lib/demo";
+import { normalizePath } from "@/lib/path";
 
 /**
  * 認証ガード。
@@ -22,7 +24,12 @@ export default function AuthProvider({
 
   useEffect(() => {
     let active = true;
-    if (pathname === "/login") {
+    const normalized = normalizePath(pathname);
+    if (normalized === "/login") {
+      setChecking(false);
+      return;
+    }
+    if (DEMO_MODE) {
       setChecking(false);
       return;
     }
@@ -45,7 +52,7 @@ export default function AuthProvider({
     };
   }, [pathname, router]);
 
-  if (pathname === "/login") return <>{children}</>;
+  if (normalizePath(pathname) === "/login") return <>{children}</>;
 
   if (checking) {
     return (

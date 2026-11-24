@@ -1,5 +1,8 @@
 "use client";
 
+import { DEMO_MODE, demoResponse } from "@/lib/demo";
+import { loginHref } from "@/lib/path";
+
 /**
  * HTTP + 認証クライアント。
  *
@@ -53,6 +56,7 @@ function decodeExp(token: string): number | null {
 }
 
 export function isLoggedIn(): boolean {
+  if (DEMO_MODE) return true;
   const token = getAccessToken();
   if (!token) return false;
   const exp = decodeExp(token);
@@ -60,11 +64,8 @@ export function isLoggedIn(): boolean {
 }
 
 function toLogin(): void {
-  if (
-    typeof window !== "undefined" &&
-    window.location.pathname !== "/login"
-  ) {
-    window.location.href = "/login";
+  if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+    window.location.href = loginHref();
   }
 }
 
@@ -72,6 +73,7 @@ let refreshing: Promise<boolean> | null = null;
 
 /** refresh token で access token を再取得する。成功時 true。単一 flight。 */
 export function refreshAccessToken(): Promise<boolean> {
+  if (DEMO_MODE) return Promise.resolve(true);
   if (refreshing) return refreshing;
   refreshing = (async () => {
     const refresh = getRefreshToken();
@@ -105,6 +107,10 @@ export function refreshAccessToken(): Promise<boolean> {
 
 /** username + password でログインし、token を保存する。 */
 export async function login(username: string, password: string): Promise<void> {
+  if (DEMO_MODE) {
+    setTokens("demo-access-token", "demo-refresh-token");
+    return;
+  }
   const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -121,6 +127,11 @@ export async function login(username: string, password: string): Promise<void> {
 
 /** ログアウト。サーバー通知はベストエフォートで、必ずローカル token を破棄する。 */
 export async function logout(): Promise<void> {
+  if (DEMO_MODE) {
+    clearTokens();
+    toLogin();
+    return;
+  }
   const token = getAccessToken();
   const refresh = getRefreshToken();
   if (token) {
@@ -162,6 +173,21 @@ export async function fetchWithAuth(
   path: string,
   init: RequestInit = {}
 ): Promise<Response> {
+  if (DEMO_MODE) {
+    let body: unknown;
+    if (typeof init.body === "string") {
+      try {
+        body = JSON.parse(init.body);
+      } catch {
+        body = undefined;
+      }
+    }
+    const data = demoResponse(path, init.method ?? "GET", body);
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   let res = await fetch(`${API_BASE}${path}`, withAuthHeaders(init));
   if (res.status === 401) {
     const ok = await refreshAccessToken();
@@ -175,6 +201,7 @@ export async function fetchWithAuth(
 }
 
 export async function httpGet<T>(path: string): Promise<T> {
+  if (DEMO_MODE) return demoResponse(path) as T;
   const res = await fetchWithAuth(path);
   if (!res.ok) {
     throw new ApiError(res.status, `API error (${res.status}): ${path}`);
@@ -183,6 +210,7 @@ export async function httpGet<T>(path: string): Promise<T> {
 }
 
 export async function httpPost<T>(path: string, body?: unknown): Promise<T> {
+  if (DEMO_MODE) return demoResponse(path, "POST", body) as T;
   const init: RequestInit = { method: "POST" };
   if (body !== undefined) {
     init.headers = { "Content-Type": "application/json" };

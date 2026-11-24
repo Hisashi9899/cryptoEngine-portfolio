@@ -20,6 +20,7 @@ import GmoAffordabilityAlert from "@/components/GmoAffordabilityAlert";
 import AutoTradeStatus from "@/components/AutoTradeStatus";
 import MarketWeather from "@/components/MarketWeather";
 import EquitySourceToggle, { type EquitySource } from "@/components/EquitySourceToggle";
+import { useI18n } from "@/lib/i18n";
 
 function InfoRow({
   label,
@@ -49,6 +50,7 @@ function InfoRow({
 }
 
 export default function OverviewPage() {
+  const { tr } = useI18n();
   const balance = usePoll(api.balance, 15000);
   const equity = usePoll(api.equityLive, 15000);
   const positions = usePoll(api.positions, 15000);
@@ -65,9 +67,9 @@ export default function OverviewPage() {
   const equityPnl = useLive ? live?.pnl_24h ?? null : b?.profit_loss;
   const totalSub = useLive
     ? live?.stale
-      ? "GMO実資産（更新停止中・最終値）"
-      : "GMO実資産（24h損益）"
-    : `paper（初期資金100万円基準）${(b?.profit_loss_rate ?? 0) >= 0 ? "+" : ""}${fmt(b?.profit_loss_rate)}%`;
+      ? tr("GMO実資産（更新停止中・最終値）", "GMO assets (stale, last value)")
+      : tr("GMO実資産（24h損益）", "GMO assets (24h P&L)")
+    : `${tr("paper（初期資金100万円基準）", "paper (initial capital ¥1,000,000)")}${(b?.profit_loss_rate ?? 0) >= 0 ? "+" : ""}${fmt(b?.profit_loss_rate)}%`;
   const equityHistory = useLive
     ? (live?.history ?? [])
     : (b?.history ?? []);
@@ -80,12 +82,15 @@ export default function OverviewPage() {
 
       <PageHeader
         title="Overview"
-        subtitle="資金・ポジション・シグナルの全体サマリー"
+        subtitle={tr(
+          "資金・ポジション・シグナルの全体サマリー",
+          "Capital, positions, and signals at a glance"
+        )}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatusCard
-          label={useLive ? "Total Assets（GMO実資産）" : "Total Assets（paper）"}
+          label={useLive ? tr("Total Assets（GMO実資産）", "Total Assets (GMO)") : tr("Total Assets（paper）", "Total Assets (paper)")}
           value={fmtYen(totalAssets)}
           icon={Wallet}
           delta={fmtYen(equityPnl)}
@@ -93,33 +98,33 @@ export default function OverviewPage() {
           sub={totalSub}
         />
         <StatusCard
-          label="Open Positions（保有ポジション）"
+          label={tr("Open Positions（保有ポジション）", "Open Positions")}
           value={String(positions.data?.positions.length ?? 0)}
           icon={Layers}
           delta={fmtYen(totalPnl)}
           deltaPositive={totalPnl >= 0}
-          sub="含み損益合計"
+          sub={tr("含み損益合計", "Total unrealized P&L")}
           tone="sky"
         />
         <StatusCard
-          label="Signals (24h)（シグナル）"
+          label={tr("Signals (24h)（シグナル）", "Signals (24h)")}
           value={String(signals.data?.signals.length ?? 0)}
           icon={Activity}
-          sub="買い / 売り / 様子見"
+          sub={tr("買い / 売り / 様子見", "Buy / Sell / Hold")}
           tone="amber"
         />
         <StatusCard
-          label="API Latency（API 応答速度）"
+          label={tr("API Latency（API 応答速度）", "API Latency")}
           value={`${system.data?.api.latency_ms ?? "-"} ms`}
           icon={TrendingUp}
-          sub="コアエンジン稼働中"
+          sub={tr("コアエンジン稼働中", "Core engine running")}
           tone="navy"
         />
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card
-          title={useLive ? "Equity Curve（GMO実資産推移）" : "Equity Curve（資産推移・paper）"}
+          title={useLive ? tr("Equity Curve（GMO実資産推移）", "Equity Curve (GMO)") : tr("Equity Curve（資産推移・paper）", "Equity Curve (paper)")}
           icon={TrendingUp}
           className="lg:col-span-2"
           action={
@@ -138,7 +143,7 @@ export default function OverviewPage() {
             height={280}
           />
         </Card>
-        <Card title="Recent Signals（直近シグナル）" icon={Activity}>
+        <Card title={tr("Recent Signals（直近シグナル）", "Recent Signals")} icon={Activity}>
           <ul className="space-y-3">
             {signals.data?.signals.slice(0, 5).map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-2">
@@ -163,7 +168,7 @@ export default function OverviewPage() {
             ))}
             {(!signals.data || signals.data.signals.length === 0) && (
               <li className="py-6 text-center text-sm text-slate-500">
-                シグナルデータがありません
+                {tr("シグナルデータがありません", "No signal data")}
               </li>
             )}
           </ul>
@@ -179,7 +184,7 @@ export default function OverviewPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card title="Open Positions（保有ポジション）" icon={Layers} className="lg:col-span-2">
+        <Card title={tr("Open Positions（保有ポジション）", "Open Positions")} icon={Layers} className="lg:col-span-2">
           <ul className="space-y-3">
             {positions.data?.positions.map((p) => (
               <li
@@ -217,15 +222,15 @@ export default function OverviewPage() {
             ))}
             {(!positions.data || positions.data.positions.length === 0) && (
               <li className="py-6 text-center text-sm text-slate-500">
-                保有ポジションはありません
+                {tr("保有ポジションはありません", "No open positions")}
               </li>
             )}
           </ul>
         </Card>
-        <Card title="Engine（エンジン）" icon={TrendingUp}>
+        <Card title={tr("Engine（エンジン）", "Engine")} icon={TrendingUp}>
           <div className="space-y-1 text-sm">
             <InfoRow
-              label="Core（コア）"
+              label={tr("Core（コア）", "Core")}
               value={system.data?.core.status ?? "…"}
               ok={coreOk}
             />
@@ -235,16 +240,16 @@ export default function OverviewPage() {
               ok={system.data?.api.status === "ok"}
             />
             <InfoRow
-              label="Trader（自動売買）"
-              value={`${system.data?.trader?.status ?? "…"} ${system.data?.trader?.ticks ?? 0}tick/${system.data?.trader?.orders ?? 0}注文`}
+              label={tr("Trader（自動売買）", "Trader")}
+              value={`${system.data?.trader?.status ?? "…"} ${system.data?.trader?.ticks ?? 0}tick/${system.data?.trader?.orders ?? 0}${tr("注文", " orders")}`}
               ok={system.data?.trader?.status === "running"}
             />
             <InfoRow
-              label="Containers（コンテナ）"
+              label={tr("Containers（コンテナ）", "Containers")}
               value={String(system.data?.docker.containers.length ?? 0)}
             />
             <InfoRow
-              label="Heartbeat（最終応答）"
+              label={tr("Heartbeat（最終応答）", "Heartbeat")}
               value={system.data?.core.last_heartbeat ?? "…"}
             />
           </div>

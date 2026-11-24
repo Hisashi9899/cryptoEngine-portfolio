@@ -5,15 +5,16 @@ import Card from "@/components/Card";
 import Badge from "@/components/Badge";
 import { marketWeatherApi, usePoll, type WeatherSymbol } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { useI18n } from "@/lib/i18n";
 
-const REGIME_META: Record<string, { icon: string; label: string; tone: "emerald" | "red" | "amber" | "slate" | "sky" }> = {
-  trend_up: { icon: "☀", label: "上昇", tone: "emerald" },
-  trend_down: { icon: "🌧", label: "下降", tone: "sky" },
-  range: { icon: "☁", label: "横ばい", tone: "slate" },
-  high_vol: { icon: "⚡", label: "荒れ", tone: "amber" },
-  reversal: { icon: "🌊", label: "反転", tone: "amber" },
-  low_vol: { icon: "🌫", label: "凪", tone: "slate" },
-  uncertain: { icon: "❔", label: "不明", tone: "slate" },
+const REGIME_META: Record<string, { icon: string; label: string; labelEn: string; tone: "emerald" | "red" | "amber" | "slate" | "sky" }> = {
+  trend_up: { icon: "☀", label: "上昇", labelEn: "Uptrend", tone: "emerald" },
+  trend_down: { icon: "🌧", label: "下降", labelEn: "Downtrend", tone: "sky" },
+  range: { icon: "☁", label: "横ばい", labelEn: "Range", tone: "slate" },
+  high_vol: { icon: "⚡", label: "荒れ", labelEn: "High vol", tone: "amber" },
+  reversal: { icon: "🌊", label: "反転", labelEn: "Reversal", tone: "amber" },
+  low_vol: { icon: "🌫", label: "凪", labelEn: "Low vol", tone: "slate" },
+  uncertain: { icon: "❔", label: "不明", labelEn: "Unknown", tone: "slate" },
 };
 
 function meta(regime: string) {
@@ -21,17 +22,18 @@ function meta(regime: string) {
   return REGIME_META[regime] ?? REGIME_META["uncertain"];
 }
 
-const LEGEND: { icon: string; label: string; desc: string }[] = [
-  { icon: "☀", label: "上昇", desc: "上げの流れが統計的に有意" },
-  { icon: "🌧", label: "下降", desc: "下げの流れが統計的に有意" },
-  { icon: "☁", label: "横ばい", desc: "方向なし・条件次第で参加" },
-  { icon: "⚡", label: "荒れ", desc: "変動大・短期決戦のみ" },
-  { icon: "🌊", label: "反転", desc: "流れの転換点・慎重に参加" },
-  { icon: "🌫", label: "凪", desc: "動き不足でお休み" },
-  { icon: "❔", label: "不明", desc: "材料不足でお休み" },
+const LEGEND: { icon: string; label: string; labelEn: string; desc: string; descEn: string }[] = [
+  { icon: "☀", label: "上昇", labelEn: "Uptrend", desc: "上げの流れが統計的に有意", descEn: "Statistically significant upward flow" },
+  { icon: "🌧", label: "下降", labelEn: "Downtrend", desc: "下げの流れが統計的に有意", descEn: "Statistically significant downward flow" },
+  { icon: "☁", label: "横ばい", labelEn: "Range", desc: "方向なし・条件次第で参加", descEn: "No direction; participate only on setup" },
+  { icon: "⚡", label: "荒れ", labelEn: "High vol", desc: "変動大・短期決戦のみ", descEn: "Large moves; short-term only" },
+  { icon: "🌊", label: "反転", labelEn: "Reversal", desc: "流れの転換点・慎重に参加", descEn: "Potential turning point; be cautious" },
+  { icon: "🌫", label: "凪", labelEn: "Low vol", desc: "動き不足でお休み", descEn: "Too quiet; stand aside" },
+  { icon: "❔", label: "不明", labelEn: "Unknown", desc: "材料不足でお休み", descEn: "Insufficient data; stand aside" },
 ];
 
 function WeatherChip({ symbol, w }: { symbol: string; w: WeatherSymbol }) {
+  const { tr } = useI18n();
   const m = meta(w.regime);
   const score = (w.cal || 0) > 0 ? w.cal : w.regime_conf || 0;
   const pct = Math.round(score * 100);
@@ -63,8 +65,8 @@ function WeatherChip({ symbol, w }: { symbol: string; w: WeatherSymbol }) {
         <span className="font-mono text-[10px] text-slate-400">{pct}%</span>
       </div>
       <div className="mt-1 text-[10px] text-slate-500">
-        {m.label}
-        {w.approaching && <span className="ml-1 font-bold text-amber-300">接近</span>}
+        {tr(m.label, m.labelEn)}
+        {w.approaching && <span className="ml-1 font-bold text-amber-300">{tr("接近", "Approaching")}</span>}
       </div>
     </div>
   );
@@ -75,6 +77,7 @@ function WeatherChip({ symbol, w }: { symbol: string; w: WeatherSymbol }) {
  * 監視が生きている証拠＋引き金接近の予告。操作は不要。
  */
 export default function MarketWeather() {
+  const { tr } = useI18n();
   const { data } = usePoll(marketWeatherApi.weather, 10000);
   const entries = Object.entries(data?.symbols ?? {}).sort(([a], [b]) =>
     a.localeCompare(b)
@@ -84,28 +87,33 @@ export default function MarketWeather() {
 
   return (
     <Card
-      title="相場天気予報（全銘柄・5秒更新）"
+      title={tr("相場天気予報（全銘柄・5秒更新）", "Market Weather (all symbols, 5s)")}
       icon={CloudSun}
       action={
         <span className="flex items-center gap-2 text-xs text-slate-500">
           {live ? (
-            <Badge tone="emerald">監視中</Badge>
+            <Badge tone="emerald">{tr("監視中", "LIVE")}</Badge>
           ) : (
-            <Badge tone="slate">更新待ち</Badge>
+            <Badge tone="slate">{tr("更新待ち", "WAITING")}</Badge>
           )}
         </span>
       }
     >
       {entries.length === 0 ? (
         <p className="py-6 text-center text-sm text-slate-500">
-          天気データを取得中です（trader起動後まもなく表示されます）
+          {tr(
+            "天気データを取得中です（trader起動後まもなく表示されます）",
+            "Loading market weather (it appears shortly after the trader starts)"
+          )}
         </p>
       ) : (
         <>
           {approaching.length > 0 && (
             <p className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
-              チャンス接近中: <b>{approaching.join("、")}</b>
-              <span className="text-amber-200/70"> — 方向は出ています。条件が揃えば発注します</span>
+              {tr("チャンス接近中", "Approaching setup")}: <b>{approaching.join(", ")}</b>
+              <span className="text-amber-200/70">
+                {" "}— {tr("方向は出ています。条件が揃えば発注します", "direction is present; orders trigger when conditions align")}
+              </span>
             </p>
           )}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -117,13 +125,16 @@ export default function MarketWeather() {
             {LEGEND.map((l) => (
               <span key={l.label} className="inline-flex items-center gap-1">
                 <span>{l.icon}</span>
-                <b className="font-medium text-slate-400">{l.label}</b>
-                <span>{l.desc}</span>
+                <b className="font-medium text-slate-400">{tr(l.label, l.labelEn)}</b>
+                <span>{tr(l.desc, l.descEn)}</span>
               </span>
             ))}
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            バーは現在の確信度(発火に近いほど長い)です。凪・不明は設計通りお休みです。
+            {tr(
+              "バーは現在の確信度(発火に近いほど長い)です。凪・不明は設計通りお休みです。",
+              "Bars show current confidence (longer means closer to a trigger). Low-vol and unknown states intentionally stand aside."
+            )}
           </p>
         </>
       )}

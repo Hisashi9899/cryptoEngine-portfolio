@@ -8,7 +8,9 @@ import { useVTwinAnimation } from "./useVTwinAnimation";
 import { ExhaustSmoke } from "./ExhaustSmoke";
 import type { Stage } from "./types";
 
-const MODEL_PATH = "/models/bike.glb";
+import { asset } from "@/lib/asset";
+
+const MODEL_PATH = asset("/models/bike.glb");
 
 type GLTFData = { scene: THREE.Group; nodes: Record<string, THREE.Object3D> };
 

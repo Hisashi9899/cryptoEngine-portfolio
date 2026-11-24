@@ -13,25 +13,27 @@ import {
   type ErrorLogEntry,
 } from "@/lib/api";
 import { fmtClock, fmtDuration } from "@/lib/format";
+import { useI18n } from "@/lib/i18n";
 import AutoTradePanel from "./AutoTradePanel";
 
 export default function SystemPage() {
+  const { tr } = useI18n();
   const { data, error } = usePoll(api.system, 5000);
 
   const containerColumns: Column<ContainerInfo>[] = [
     {
       key: "name",
-      label: "Container（コンテナ）",
+      label: tr("Container（コンテナ）", "Container"),
       render: (c) => <span className="font-mono text-xs text-slate-200">{c.name}</span>,
     },
     {
       key: "image",
-      label: "Image（イメージ）",
+      label: tr("Image（イメージ）", "Image"),
       render: (c) => <span className="font-mono text-xs text-slate-500">{c.image}</span>,
     },
     {
       key: "status",
-      label: "Status（状態）",
+      label: tr("Status（状態）", "Status"),
       render: (c) =>
         c.status === "running" ? (
           <Badge tone="emerald">● running</Badge>
@@ -41,7 +43,7 @@ export default function SystemPage() {
     },
     {
       key: "uptime",
-      label: "Uptime（稼働時間）",
+      label: tr("Uptime（稼働時間）", "Uptime"),
       render: (c) => <span className="text-slate-400">{c.uptime}</span>,
     },
   ];
@@ -49,12 +51,12 @@ export default function SystemPage() {
   const errorColumns: Column<ErrorLogEntry>[] = [
     {
       key: "timestamp",
-      label: "Time（時刻）",
+      label: tr("Time（時刻）", "Time"),
       render: (e) => <span className="text-slate-400">{fmtClock(e.timestamp)}</span>,
     },
     {
       key: "level",
-      label: "Level（レベル）",
+      label: tr("Level（レベル）", "Level"),
       render: (e) =>
         e.level === "error" ? (
           <Badge tone="red">error</Badge>
@@ -64,7 +66,7 @@ export default function SystemPage() {
     },
     {
       key: "message",
-      label: "Message（メッセージ）",
+      label: tr("Message（メッセージ）", "Message"),
       render: (e) => <span className="text-slate-300">{e.message}</span>,
     },
   ];
@@ -75,12 +77,12 @@ export default function SystemPage() {
     <>
       <PageHeader
         title="System"
-        subtitle="core / API / Docker の稼働状況"
+        subtitle={tr("core / API / Docker の稼働状況", "Core, API, and Docker health")}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatusCard
-          label="Core Engine（コアエンジン）"
+          label={tr("Core Engine（コアエンジン）", "Core Engine")}
           value={data?.core.status ?? "…"}
           icon={Cpu}
           tone={coreOk ? "emerald" : "red"}
@@ -91,25 +93,25 @@ export default function SystemPage() {
           }
         />
         <StatusCard
-          label="API Latency（API 応答速度）"
+          label={tr("API Latency（API 応答速度）", "API Latency")}
           value={`${data?.api.latency_ms ?? "-"} ms`}
           icon={Activity}
           tone="sky"
-          sub={`${data?.api.requests_1h ?? 0} リクエスト/h`}
+          sub={`${data?.api.requests_1h ?? 0} ${tr("リクエスト/h", "requests/h")}`}
         />
         <StatusCard
-          label="Containers（コンテナ数）"
+          label={tr("Containers（コンテナ数）", "Containers")}
           value={String(data?.docker.containers.length ?? 0)}
           icon={Server}
           tone="navy"
           sub={data?.docker.containers.map((c) => c.name).join(", ")}
         />
         <StatusCard
-          label="Errors (24h)（エラー数）"
+          label={tr("Errors (24h)（エラー数）", "Errors (24h)")}
           value={String(data?.errors.length ?? 0)}
           icon={AlertTriangle}
           tone={data?.errors.length ? "amber" : "emerald"}
-          sub="警告 + エラー"
+          sub={tr("警告 + エラー", "Warnings + errors")}
         />
       </div>
 
@@ -120,20 +122,20 @@ export default function SystemPage() {
       )}
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card title="Docker Containers（Docker コンテナ）" icon={Server}>
+        <Card title={tr("Docker Containers（Docker コンテナ）", "Docker Containers")} icon={Server}>
           <Table
             columns={containerColumns}
             rows={data?.docker.containers ?? []}
             rowKey={(c) => c.name}
-            emptyMessage="コンテナ情報がありません"
+            emptyMessage={tr("コンテナ情報がありません", "No container information")}
           />
         </Card>
-        <Card title="Error Log（エラーログ）" icon={AlertTriangle}>
+        <Card title={tr("Error Log（エラーログ）", "Error Log")} icon={AlertTriangle}>
           <Table
             columns={errorColumns}
             rows={data?.errors ?? []}
             rowKey={(e, i) => `${e.timestamp}-${i}`}
-            emptyMessage="エラーはありません"
+            emptyMessage={tr("エラーはありません", "No errors")}
           />
         </Card>
       </div>

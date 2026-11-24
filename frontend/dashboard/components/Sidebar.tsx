@@ -18,24 +18,30 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { logout } from "@/lib/http";
+import { useI18n } from "@/lib/i18n";
+import LanguageToggle from "./LanguageToggle";
+import { DEMO_MODE } from "@/lib/demo";
+import { normalizePath } from "@/lib/path";
 
 const NAV = [
-  { href: "/", label: "Overview（概要）", icon: LayoutDashboard },
-  { href: "/balance", label: "Balance（残高）", icon: Wallet },
-  { href: "/positions", label: "Positions（ポジション）", icon: Layers },
-  { href: "/trades", label: "Trades（取引）", icon: ArrowLeftRight },
-  { href: "/signals", label: "Signals（シグナル）", icon: Activity },
-  { href: "/vt", label: "V.T Monitor", icon: Radar },
-  { href: "/vt-signals", label: "V.T Signals", icon: Activity },
-  { href: "/funding", label: "Funding（FR監視）", icon: Percent },
-  { href: "/grid", label: "Grid（評価）", icon: Grid3x3 },
-  { href: "/orderbook", label: "Orderbook（板情報）", icon: BookOpenText },
-  { href: "/system", label: "System（システム）", icon: Server },
+  { href: "/", ja: "概要", en: "Overview", icon: LayoutDashboard },
+  { href: "/balance", ja: "残高", en: "Balance", icon: Wallet },
+  { href: "/positions", ja: "建玉", en: "Positions", icon: Layers },
+  { href: "/trades", ja: "取引", en: "Trades", icon: ArrowLeftRight },
+  { href: "/signals", ja: "信号", en: "Signals", icon: Activity },
+  { href: "/vt", ja: "V.T Monitor", en: "V.T Monitor", icon: Radar },
+  { href: "/vt-signals", ja: "V.T信号", en: "V.T Signals", icon: Activity },
+  { href: "/funding", ja: "FR監視", en: "Funding", icon: Percent },
+  { href: "/grid", ja: "格子評価", en: "Grid", icon: Grid3x3 },
+  { href: "/orderbook", ja: "板情報", en: "Orderbook", icon: BookOpenText },
+  { href: "/system", ja: "システム", en: "System", icon: Server },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { tr } = useI18n();
+  const current = normalizePath(pathname);
 
   const onLogout = async () => {
     await logout();
@@ -49,17 +55,23 @@ export default function Sidebar() {
           <div className="grid h-10 w-10 place-items-center rounded-card bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-glow">
             <Gauge className="h-5 w-5 text-navy-950" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-bold tracking-tight text-white">
               CryptoEngine
             </p>
             <p className="text-xs text-slate-400">Auto Trading Monitor</p>
+            {DEMO_MODE && (
+              <span className="mt-1 inline-block rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300">
+                Demo
+              </span>
+            )}
           </div>
+          <LanguageToggle className="ml-auto" />
         </div>
 
         <nav className="flex flex-1 flex-col gap-1">
           {NAV.map((item) => {
-            const active = pathname === item.href;
+            const active = current === item.href;
             const Icon = item.icon;
             return (
               <Link
@@ -73,7 +85,7 @@ export default function Sidebar() {
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {item.label}
+                {tr(item.ja, item.en)}
                 {active && (
                   <span className="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 )}
@@ -100,7 +112,7 @@ export default function Sidebar() {
             className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-card border border-white/5 bg-white/[0.03] px-3 py-2 text-xs font-medium text-slate-400 transition-colors hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
           >
             <LogOut className="h-3.5 w-3.5" />
-            ログアウト
+            {tr("ログアウト", "Log out")}
           </button>
         </div>
       </div>

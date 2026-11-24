@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import { ApiError, isLoggedIn, login } from "@/lib/http";
 import LoginSuccessOverlay from "@/components/vtwin/LoginSuccessOverlay";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useI18n } from "@/lib/i18n";
+import { DEMO_MODE } from "@/lib/demo";
+import { asset } from "@/lib/asset";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +21,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (isLoggedIn()) router.replace("/");
+    if (!DEMO_MODE && isLoggedIn()) router.replace("/");
   }, [router]);
 
   // NOTE: VTwinScene（three.js）の先読みは行わない。
@@ -34,8 +39,8 @@ export default function LoginPage() {
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 401
-          ? "ユーザー名またはパスワードが正しくありません。"
-          : "ログインに失敗しました。しばらくしてから再試行してください。"
+          ? tr("ユーザー名またはパスワードが正しくありません。", "Invalid username or password.")
+          : tr("ログインに失敗しました。しばらくしてから再試行してください。", "Sign-in failed. Please try again in a moment.")
       );
       setBusy(false);
     }
@@ -56,12 +61,16 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 h-[300px] w-[300px] rounded-full bg-slate-500/10 blur-3xl" />
       </div>
 
+      <div className="absolute right-4 top-4 z-20">
+        <LanguageToggle />
+      </div>
+
       <div className="relative z-10 w-full max-w-md">
         <div className="ce-form-in mb-6 flex justify-center">
           <div className="w-full max-w-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo/logo-animated.svg"
+              src={asset("/logo/logo-animated.svg")}
               alt="CryptoEngine"
               className="w-full"
               width={520}
@@ -74,15 +83,20 @@ export default function LoginPage() {
           onSubmit={onSubmit}
           className="ce-form-in rounded-card border border-white/10 bg-navy-900/70 p-8 shadow-2xl backdrop-blur-xl"
         >
-          <h2 className="text-lg font-semibold text-slate-100">ログイン</h2>
+          <h2 className="text-lg font-semibold text-slate-100">
+            {tr("ログイン", "Sign in")}
+          </h2>
           <p className="mt-1 text-xs text-slate-500">
-            CryptoEngine の監視ダッシュボードへアクセスするには認証が必要です
+            {tr(
+              "CryptoEngine の監視ダッシュボードへアクセスするには認証が必要です",
+              "Sign in to access the CryptoEngine monitoring dashboard"
+            )}
           </p>
 
           <div className="mt-6 space-y-4">
             <label className="block">
               <span className="text-xs font-medium text-slate-400">
-                Username（ユーザー名）
+                {tr("Username（ユーザー名）", "Username")}
               </span>
               <input
                 type="text"
@@ -97,7 +111,7 @@ export default function LoginPage() {
 
             <label className="block">
               <span className="text-xs font-medium text-slate-400">
-                Password（パスワード）
+                {tr("Password（パスワード）", "Password")}
               </span>
               <div className="relative mt-1.5">
                 <input
@@ -112,7 +126,11 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
+                  aria-label={
+                    showPassword
+                      ? tr("パスワードを隠す", "Hide password")
+                      : tr("パスワードを表示", "Show password")
+                  }
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-300"
                 >
                   {showPassword ? (
@@ -144,7 +162,9 @@ export default function LoginPage() {
             ) : (
               <LogIn className="h-4 w-4" />
             )}
-            {busy ? "イグニッション..." : "ログイン"}
+            {busy
+              ? tr("イグニッション...", "Igniting...")
+              : tr("ログイン", "Sign in")}
           </button>
         </form>
 

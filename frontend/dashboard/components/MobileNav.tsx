@@ -15,19 +15,21 @@ import {
   Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useI18n } from "@/lib/i18n";
+import { normalizePath } from "@/lib/path";
 
 const NAV = [
-  { href: "/", label: "概要", icon: LayoutDashboard },
-  { href: "/balance", label: "残高", icon: Wallet },
-  { href: "/positions", label: "建玉", icon: Layers },
-  { href: "/trades", label: "取引", icon: ArrowLeftRight },
-  { href: "/signals", label: "信号", icon: Activity },
-  { href: "/vt", label: "V.T", icon: Radar },
-  { href: "/vt-signals", label: "V.T信号", icon: Activity },
-  { href: "/funding", label: "FR", icon: Percent },
-  { href: "/grid", label: "格子", icon: Grid3x3 },
-  { href: "/orderbook", label: "板", icon: BookOpenText },
-  { href: "/system", label: "系", icon: Server },
+  { href: "/", ja: "概要", en: "Home", icon: LayoutDashboard },
+  { href: "/balance", ja: "残高", en: "Balance", icon: Wallet },
+  { href: "/positions", ja: "建玉", en: "Positions", icon: Layers },
+  { href: "/trades", ja: "取引", en: "Trades", icon: ArrowLeftRight },
+  { href: "/signals", ja: "信号", en: "Signals", icon: Activity },
+  { href: "/vt", ja: "V.T", en: "V.T", icon: Radar },
+  { href: "/vt-signals", ja: "V.T信号", en: "V.T Sig", icon: Activity },
+  { href: "/funding", ja: "FR", en: "FR", icon: Percent },
+  { href: "/grid", ja: "格子", en: "Grid", icon: Grid3x3 },
+  { href: "/orderbook", ja: "板", en: "Book", icon: BookOpenText },
+  { href: "/system", ja: "系", en: "System", icon: Server },
 ];
 
 /**
@@ -36,15 +38,17 @@ const NAV = [
  */
 export default function MobileNav() {
   const pathname = usePathname();
+  const { tr } = useI18n();
+  const current = normalizePath(pathname);
 
   return (
     <nav
-      aria-label="モバイルナビ"
+      aria-label={tr("モバイルナビ", "Mobile navigation")}
       className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-navy-900/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
     >
       <ul className="grid grid-cols-11">
         {NAV.map((item) => {
-          const active = pathname === item.href;
+          const active = current === item.href;
           const Icon = item.icon;
           return (
             <li key={item.href}>
@@ -57,7 +61,7 @@ export default function MobileNav() {
                 )}
               >
                 <Icon className="h-5 w-5" />
-                {item.label}
+                {tr(item.ja, item.en)}
                 {active && <span className="h-1 w-1 rounded-full bg-emerald-400" />}
               </Link>
             </li>

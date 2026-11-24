@@ -12,6 +12,12 @@ The project is intentionally opinionated about reliability: the execution loop o
 
 ## Screenshots
 
+**[Open the live demo](https://hisashi9899.github.io/cryptoEngine-portfolio/)** — a static, client-side build with deterministic demo data. No account, API key, or backend is required. Use the **JA / EN** toggle in the top-right corner.
+
+<p align="center">
+  <img src="docs/screenshots/demo.gif" alt="CryptoEngine demo: login, dashboard, signals, and CI" width="760">
+</p>
+
 <p align="center">
   <img src="docs/screenshots/login-3d.webp" alt="CryptoEngine login with 3D engine visual" width="760">
 </p>
@@ -22,7 +28,7 @@ The project is intentionally opinionated about reliability: the execution loop o
     <td><img src="docs/screenshots/signals.webp" alt="Signal log" width="420"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Dashboard — paper balance, signals, API latency, market weather</sub></td>
+    <td align="center"><sub>Dashboard — balance, positions, signals, API latency, market weather</sub></td>
     <td align="center"><sub>Signal log — 40 demo signals with confidence and reasons</sub></td>
   </tr>
 </table>
@@ -33,7 +39,7 @@ The project is intentionally opinionated about reliability: the execution loop o
   <sub>CI — Go core tests and Python API tests on every push</sub>
 </p>
 
-> Screenshots use deterministic demo data (`DEMO_DATA_ENABLED=1`), not a live account.
+> Screenshots use deterministic demo data, not a live account. The static demo runs entirely in the browser (`NEXT_PUBLIC_DEMO_MODE=1`); the backend demo uses `DEMO_DATA_ENABLED=1`.
 
 ---
 
@@ -272,7 +278,7 @@ sequenceDiagram
 | Infrastructure | **Docker Compose** | Multi-stage builds, health checks, resource limits |
 | Operations | **Bash / Python / cron** | Capture, replay, scoring, watchdog, retention |
 | Testing | **Go test / pytest** | Engine, gates, acceptance, math, watchdog |
-| CI | **GitHub Actions** | Go and Python test jobs on push/PR |
+| CI / CD | **GitHub Actions** | Go/Python tests + static demo deployment to GitHub Pages |
 
 ---
 
@@ -290,7 +296,8 @@ sequenceDiagram
 │       ├── vt_cost.go       # Cost gate, correlation, volatility scaling
 │       ├── vt_acceptance.go # PF / bootstrap CI acceptance gate
 │       └── vt_portfolio.go  # Portfolio-cap simulation
-├── frontend/dashboard/      # Next.js dashboard
+├── frontend/dashboard/      # Next.js dashboard (static demo in mock mode)
+├── docs/screenshots/        # README gallery and demo GIF
 ├── infra/
 │   ├── config/              # Environment templates
 │   └── docker/              # Dockerfiles and Compose files
@@ -299,7 +306,7 @@ sequenceDiagram
 │   └── scripts/             # Capture, replay, analysis, retention
 ├── tests/                   # Python tests
 ├── docker-compose.yml       # Local api/core/db stack
-└── .github/workflows/ci.yml # Go + Python CI
+└── .github/workflows/       # ci.yml (tests) + pages.yml (static demo)
 ```
 
 ---
@@ -409,6 +416,19 @@ docker compose --profile trading down
 - The engine runs in dry-run and records decisions.
 - Historical replay and acceptance scoring work on captured data.
 - The watchdog reports heartbeat and health status.
+
+### Static GitHub Pages demo
+
+The public demo is a fully client-side Next.js export, deployed by
+`.github/workflows/pages.yml`:
+
+- **URL**: https://hisashi9899.github.io/cryptoEngine-portfolio/
+- **Build**: `NEXT_PUBLIC_DEMO_MODE=1 NEXT_PUBLIC_BASE_PATH=/cryptoEngine-portfolio npm run build`
+- **Data**: deterministic mock responses from `lib/demo.ts`; no backend, exchange key, or account
+- **Language**: English by default in demo mode, with a JA / EN toggle
+
+This keeps the public demo permanent and free to host while the real engine
+continues to run privately on the VPS.
 
 ---
 

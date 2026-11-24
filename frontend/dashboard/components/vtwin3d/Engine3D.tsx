@@ -6,7 +6,9 @@ import * as THREE from "three";
 import { useVTwinAnimation } from "./useVTwinAnimation";
 import type { Stage } from "./types";
 
-const MODEL_PATH = "/models/vtwin.glb";
+import { asset } from "@/lib/asset";
+
+const MODEL_PATH = asset("/models/vtwin.glb");
 
 type GLTFData = {
   scene: THREE.Group;
