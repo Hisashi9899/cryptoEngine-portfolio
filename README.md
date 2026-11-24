@@ -36,7 +36,7 @@ The project is intentionally opinionated about reliability: the execution loop o
 <p align="center">
   <img src="docs/screenshots/ci-success.webp" alt="GitHub Actions CI success" width="840">
   <br>
-  <sub>CI — Go core tests and Python API tests on every push</sub>
+  <sub>CI/CD — Go core tests and Python API tests, plus static demo deployment to GitHub Pages</sub>
 </p>
 
 > Screenshots use deterministic demo data, not a live account. The static demo runs entirely in the browser (`NEXT_PUBLIC_DEMO_MODE=1`); the backend demo uses `DEMO_DATA_ENABLED=1`.
