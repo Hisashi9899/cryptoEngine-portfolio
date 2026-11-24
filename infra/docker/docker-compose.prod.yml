@@ -1,0 +1,68 @@
+services:
+  api:
+    restart: always
+    env_file:
+      - ../config/.env.prod
+    command: >
+      uvicorn backend.api.main:app
+      --host 0.0.0.0
+      --port 8000
+    volumes:
+      - ../../backend/core/trade_logs:/app/backend/core/trade_logs
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+  core:
+    restart: always
+    env_file:
+      - ../config/.env.prod
+    volumes:
+      - ../../backend/core/trade_logs:/trade_logs
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+  # vtlive は base 定義の env_file が ../config/.env のため、prod 合成では
+  # .env.prod を読むよう上書きが必須。無いと VPS 上で DB_URL 空→
+  # 接続失敗になる。profile 式のため起動は `--profile trading up -d vtlive` が別途必要。
+  vtlive:
+    env_file:
+      - ../config/.env.prod
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+  db:
+    restart: always
+  frontend:
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"

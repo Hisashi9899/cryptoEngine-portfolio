@@ -1,0 +1,14 @@
+{
+  "date": "20261020",
+  "days": 16,
+  "bars_sec": 300,
+  "min_pairs": 5,
+  "blocked_long": [],
+  "blocked_short": [
+    "bearish_engulfing",
+    "bb_ride_momentum_down",
+    "dma_resist",
+    "rci_turn_down"
+  ],
+  "allowed": []
+}

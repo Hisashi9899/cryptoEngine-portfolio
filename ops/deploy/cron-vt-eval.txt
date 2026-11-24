@@ -1,0 +1,5 @@
+# V.T 再評価タイミングの通知（毎日 09:20 JST）。
+# 直近14日の板データが揃い、かつ ATR が銘柄ごとの実効ゲート閾値に達したら
+# alerts@example.com へ1回だけメールする（状態は ops/logs/vt-eval-due.json）。
+# 読み取り専用・発注経路なし。
+20 9 * * * /usr/bin/flock -n /tmp/crypto-vteval.lock /usr/bin/nice -n 10 /usr/bin/python3 /opt/cryptoengine/ops/scripts/remote/vt_eval_due.py >> /opt/cryptoengine/ops/logs/cron-vt-eval.log 2>&1

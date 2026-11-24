@@ -1,0 +1,9 @@
+# BEGIN crypto-autoloop
+# 永続進化ループ（P1-P3）。
+# 夜間チューナー（毎日 03:05 JST）。前日の paper PF で確信度ゲートを微調整。
+5 3 * * * /usr/bin/flock -n /tmp/crypto-vttune.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-tune --dir=/trade_logs --days=1 --bars=300 --fee-rate=0.0015 --out=/trade_logs/vt_tune.json >> /opt/cryptoengine/ops/logs/cron-vttune.log 2>&1
+# PFゲート（日曜 07:20 JST）。不合格は即dry-run、2週連続合格でのみ実弾化。
+20 7 * * 0 /usr/bin/flock -n /tmp/crypto-pfgate.lock bash /opt/cryptoengine/ops/deploy/pf-gate.sh --apply >> /opt/cryptoengine/ops/logs/cron-pfgate.log 2>&1
+# 週次レポート（日曜 07:30 JST）。合否・調整・停止・建玉を1文書に束ねる。
+30 7 * * 0 /usr/bin/flock -n /tmp/crypto-vtreport.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-weekly-report --dir=/trade_logs --out=/trade_logs/vt_weekly_report.json >> /opt/cryptoengine/ops/logs/cron-vtreport.log 2>&1
+# END crypto-autoloop

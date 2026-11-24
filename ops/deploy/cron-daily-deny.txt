@@ -1,0 +1,6 @@
+# BEGIN crypto-vt-daily-deny
+# V.T日次キルスイッチ（毎日 00:10 JST）。前日の paper 記録から負け越し
+# パターンを vt_daily_deny.json に出す。vtlive は mtime 変化で再起動なしに
+# 再読込する（--pattern-deny-file）。週次 vt_pattern_allow.json と和集合。
+10 0 * * * /usr/bin/flock -n /tmp/crypto-vtdeny.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-pattern-allow --dir=/trade_logs --days=1 --bars=300 --min-pairs=2 --out=/trade_logs/vt_daily_deny.json >> /opt/cryptoengine/ops/logs/cron-vtdeny.log 2>&1
+# END crypto-vt-daily-deny

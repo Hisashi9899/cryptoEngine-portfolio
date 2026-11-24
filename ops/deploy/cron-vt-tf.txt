@@ -1,0 +1,19 @@
+# V.T足種追加 cron（VPS 追記分のみ・5分足は既存維持）
+# インストール（VPS 上で冪等）:
+#   bash /opt/cryptoengine/ops/deploy/install-vt-cron.sh [--apply]
+# 仕様: 1銘柄1建玉・発注なし。ファイル名・退避は足種別で分離済み
+# （vt_signals_<SYM>_<bars>_<日>.jsonl / vt_open_<SYM>_<bars>.json）。
+# テープCSVは全足種で共有追記（エンジン内CVDはプロセス毎に独立のため無影響）。
+
+# 1分足（5銘柄・10分毎・420秒 bounded）
+*/10 * * * * /usr/bin/flock -n /tmp/crypto-vt1m-btc.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=BTC --bars=60 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 60; /usr/bin/flock -n /tmp/crypto-vt1m-xrp.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=XRP --bars=60 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 120; /usr/bin/flock -n /tmp/crypto-vt1m-xlm.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=XLM --bars=60 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 180; /usr/bin/flock -n /tmp/crypto-vt1m-bch.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=BCH --bars=60 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 240; /usr/bin/flock -n /tmp/crypto-vt1m-ltc.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=LTC --bars=60 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+# 1時間足（5銘柄・10分毎・420秒 bounded）
+*/10 * * * * sleep 30; /usr/bin/flock -n /tmp/crypto-vt1h-btc.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=BTC --bars=3600 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 150; /usr/bin/flock -n /tmp/crypto-vt1h-xrp.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=XRP --bars=3600 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 210; /usr/bin/flock -n /tmp/crypto-vt1h-xlm.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=XLM --bars=3600 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 300; /usr/bin/flock -n /tmp/crypto-vt1h-bch.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=BCH --bars=3600 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1
+*/10 * * * * sleep 390; /usr/bin/flock -n /tmp/crypto-vt1h-ltc.lock /usr/bin/nice -n 10 /usr/bin/docker compose -f /opt/cryptoengine/infra/docker/docker-compose.yml -f /opt/cryptoengine/infra/docker/docker-compose.prod.yml exec -T core core vt-paper --symbol=LTC --bars=3600 --seconds=420 >> /opt/cryptoengine/ops/logs/cron-vt.log 2>&1

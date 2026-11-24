@@ -1,0 +1,70 @@
+# 共通除外リスト（deploy / sync 両方で使用）
+# .env 系の実ファイルは絶対に転送しない（APIキー漏洩防止）
+.env
+.env.prod
+.env.local
+config.env
+*.pem
+*.key
+# ビルド成果物・依存関係（VPS側で再生成する）
+node_modules/
+.next/
+__pycache__/
+.pytest_cache/
+*.pyc
+.git/
+# ローカル運用データ（VPS側で新規生成する）
+# VPS 生成のランタイムデータは --delete の削除対象からも外す
+# （未回収の当日分をデプロイで消さないため）
+ops/logs/
+backend/core/trade_logs/*.csv
+backend/core/trade_logs/*.csv.gz
+backend/core/trade_logs/trade_tape_*.csv
+backend/core/trade_logs/signals_v2_*.jsonl
+backend/core/trade_logs/vt_signals_*.jsonl
+backend/core/trade_logs/grid_signals_*.jsonl
+backend/core/trade_logs/vt_shadow_*.jsonl
+# 反実仮想（読み取り専用リプレイ）の出力。live/paper とは別ディレクトリで、
+# デプロイの --delete で消さない（週次で再生成されるが比較履歴を保持する）。
+backend/core/trade_logs/cf/
+# 時間足別（1時間足）反実仮想の出力。cf/ と同じくデプロイの --delete で
+# 消さない（比較履歴を保持する）。cf-tf-atr/ などの派生も含めて保護する。
+backend/core/trade_logs/cf-tf*/
+# 反実仮想の派生出力（cf-deny/ cf-nodeny/ など）。同じく --delete で消さない。
+backend/core/trade_logs/cf-*/
+backend/core/trade_logs/calibration_*.json
+backend/core/trade_logs/calib_sym/
+backend/core/trade_logs/trader_heartbeat.json
+backend/core/trade_logs/trader_heartbeat.json.tmp
+# 実弾・paper の建玉退避と稼働証跡（VPS 生成のライブ状態）。
+# --delete で消すと再起動後に孤児化・二重発注の元になる。
+# 2026-09-26 のデプロイで vt_live_*.json が消え、再開不能になった実績あり。
+backend/core/trade_logs/vt_live_*.json
+backend/core/trade_logs/vt_live_dryrun_*.jsonl
+backend/core/trade_logs/vt_open_*.json
+backend/core/trade_logs/vt_live_heartbeat.json
+backend/core/trade_logs/funding.jsonl
+backend/core/trade_logs/vt_score_weekly.json
+backend/core/trade_logs/vt_pattern_allow.json
+backend/core/trade_logs/vt_static_deny.json
+backend/core/trade_logs/vt_daily_deny.json
+# 反実仮想専用のdeny（パターン除外の検証用）。live の vt_static_deny.json
+# とは独立で、デプロイの --delete で消さない。
+backend/core/trade_logs/vt_cf_deny.json
+# deny の ablation 用（空deny）。live とは無関係の一時ファイル。
+backend/core/trade_logs/vt_cf_nodeny.json
+backend/core/trade_logs/vt_acceptance.json
+backend/core/trade_logs/vt_acceptance_prev.json
+backend/core/trade_logs/vt_tune.json
+backend/core/trade_logs/vt_weekly_report.json
+backend/core/trade_logs/rp_*.jsonl
+backend/core/trade_logs/shadow_edge.jsonl
+backend/core/trade_logs/shadow_audit_*.json
+backend/core/trade_logs/sweep_calib_week*.json*
+backend/core/trade_logs/orderbook_BTC_week_tmp.csv
+backend/core/trade_logs/market_weather.json
+backend/core/trade_logs/market_weather.json.tmp
+backend/core/trade_logs/*.tmp
+# デプロイ用秘密鍵の実体（.pub は許可）
+ops/keys/cryptoengine_deploy
+ops/keys/cryptoengine_ops

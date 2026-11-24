@@ -1,0 +1,4 @@
+# V.T dry-run 観測点通知（毎日 09:45 JST）。
+# 新設定（2026-11-23）以降の dry-run 往復が観測点に達したときだけメールする。
+# 各観測点は1回だけ。live は dry-run のまま。
+45 9 * * * /usr/bin/flock -n /tmp/crypto-vtobserve.lock /usr/bin/nice -n 10 /usr/bin/python3 /opt/cryptoengine/ops/scripts/remote/vt_observe_due.py >> /opt/cryptoengine/ops/logs/cron-vt-observe.log 2>&1

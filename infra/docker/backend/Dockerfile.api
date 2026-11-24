@@ -1,0 +1,28 @@
+FROM golang:1.25-alpine AS crypto-core-builder
+
+WORKDIR /app
+COPY backend/core/ .
+# NOTE: 単一ファイル指定（./main.go）ではなくパッケージ全体（.）をビルドすること。
+# CLI メソッドは main.go / paper.go に分散しているため、./main.go 指定では
+# paper.go が除外され「cli.paper undefined」で失敗する（Dockerfile.core と同件）。
+RUN go mod download && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /core .
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY backend/api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend/ backend/
+
+# core バイナリ（backtest CLI 等）。/app/backend は compose のボリュームで
+# 上書きされるため、上書きされない /usr/local/bin に配置する。
+COPY --from=crypto-core-builder /core /usr/local/bin/core
+
+ENV CORE_GRPC_TARGET=core:50051
+
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

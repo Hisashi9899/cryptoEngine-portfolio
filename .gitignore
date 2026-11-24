@@ -1,0 +1,78 @@
+# ============================================================
+# CryptoEngine — public repository ignore rules
+# ============================================================
+
+# --- Secrets / environment files -----------------------------
+# Real environment files must never be committed.
+.env
+.env.*
+!.env.example
+!*.env.local.example
+*.env.prod
+infra/config/.env
+infra/config/.env.prod
+infra/docker/.env
+infra/docker/.env.prod
+ops/scripts/config.env
+
+# --- Keys / certificates -------------------------------------
+*.pem
+*.key
+*.p12
+*.pfx
+*.ppk
+id_rsa*
+id_ed25519*
+ops/keys/
+ops/keys/*
+
+# --- Runtime data / logs / reports ---------------------------
+# Live, paper and replay data are generated on the VPS and are not part
+# of the source distribution. Keeping them out also prevents account or
+# trading data from leaking into a public repository.
+backend/core/trade_logs/
+backend/core/*.csv
+backend/core/*.csv.gz
+backend/core/*.jsonl
+backend/core/*.log
+backend/core/trade_tape_*.csv
+backend/core/signals_v2_*.jsonl
+backend/core/vt_signals_*.jsonl
+backend/core/grid_signals_*.jsonl
+backend/core/vt_shadow_*.jsonl
+ops/logs/
+ops/reports/
+ops/keys/
+*.log
+*.bak
+*.tmp
+*.out
+
+# --- Databases / dumps --------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+
+# --- Build artifacts ----------------------------------------
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+backend/core/core
+frontend/dashboard/.next/
+frontend/dashboard/node_modules/
+
+# --- OS / editor metadata -----------------------------------
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+.idea/
+.vscode/

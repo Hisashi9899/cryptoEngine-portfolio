@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package engine.v1;
+
+option go_package = "github.com/cryptoEngine/core/grpc/rpcgen";
+
+// Engine サービスは cryptoEngine の Go core が提供する一連の RPC を公開する。
+service Engine {
+  // 約定板データを取得する。
+  rpc FetchOrderBook(FetchOrderBookRequest) returns (FetchOrderBookResponse);
+  // ティッカー（現在値）を取得する。
+  rpc FetchTicker(FetchTickerRequest) returns (FetchTickerResponse);
+  // 約定板データから売買シグナルを検出する。
+  rpc DetectSignal(DetectSignalRequest) returns (DetectSignalResponse);
+}
+
+// 一つの板情報（価格・数量ペア）。
+message Order {
+  double price = 1;
+  double volume = 2;
+}
+
+// 約定板データ。
+message OrderBook {
+  string symbol = 1;
+  repeated Order bids = 2;
+  repeated Order asks = 3;
+  int64 timestamp = 4;
+  double mid_price = 5;
+  double spread = 6;
+}
+
+// ティッカー（現在値）データ。
+message Ticker {
+  string symbol = 1;
+  double last = 2;
+  double bid = 3;
+  double ask = 4;
+  double volume = 5;
+}
+
+// シグナルの種別。
+enum SignalType {
+  SIGNAL_TYPE_UNSPECIFIED = 0;
+  SIGNAL_TYPE_BUY = 1;
+  SIGNAL_TYPE_SELL = 2;
+  SIGNAL_TYPE_HOLD = 3;
+}
+
+// 売買サイド。
+enum TradeSide {
+  TRADE_SIDE_UNSPECIFIED = 0;
+  TRADE_SIDE_BUY = 1;
+  TRADE_SIDE_SELL = 2;
+}
+
+// 検出された売買シグナル。
+message Signal {
+  string symbol = 1;
+  SignalType type = 2;
+  double confidence = 3;
+  string reason = 4;
+  double mid_price = 5;
+  double spread_basis = 6;
+  int64 timestamp = 7;
+}
+
+message FetchOrderBookRequest {
+  string symbol = 1;
+  int32 limit = 2;
+}
+
+message FetchOrderBookResponse {
+  OrderBook order_book = 1;
+  int64 latency_ms = 2;
+}
+
+message FetchTickerRequest {
+  string symbol = 1;
+}
+
+message FetchTickerResponse {
+  Ticker ticker = 1;
+  int64 latency_ms = 2;
+}
+
+message DetectSignalRequest {
+  OrderBook order_book = 1;
+  double spread_threshold = 2;
+}
+
+message DetectSignalResponse {
+  Signal signal = 1;
+}

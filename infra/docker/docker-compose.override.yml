@@ -1,0 +1,13 @@
+services:
+  api:
+    restart: "no"
+    command: >
+      uvicorn backend.api.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+    volumes:
+      - ../../backend/api:/app/backend/api
+      - ../../backend/core:/app/backend/core
+  core:
+    restart: "no"

@@ -1,0 +1,5 @@
+# V.T コストゲート反実仮想（日曜 04:30 JST）。
+# 読み取り専用・発注経路なし・独立一時コンテナ（1 CPU / 192MB）。
+# k=2.5（現行）/1.0/0 を同じ板データで比較し、ゲートの機会損失を測る。
+# 出力: ops/logs/vt-counterfactual.tsv / cron-vtcf.log
+30 4 * * 0 /usr/bin/flock -n /tmp/crypto-vtcf.lock /usr/bin/nice -n 10 bash /opt/cryptoengine/ops/scripts/remote/vt-counterfactual.sh >> /opt/cryptoengine/ops/logs/cron-vtcf.log 2>&1

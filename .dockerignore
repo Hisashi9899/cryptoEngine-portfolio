@@ -1,0 +1,28 @@
+# Build context hygiene: never ship secrets or runtime data into images.
+.git
+.github
+node_modules
+.next
+__pycache__
+*.pyc
+.pytest_cache
+
+# Environment files (examples are allowed)
+.env
+.env.*
+!.env.example
+!*.env.local.example
+*.env.prod
+ops/keys/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime data / logs / reports
+backend/core/trade_logs/
+ops/logs/
+ops/reports/
+*.log
+tmp_*.json
+tmp_*.csv

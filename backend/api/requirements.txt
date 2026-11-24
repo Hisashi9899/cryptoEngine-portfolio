@@ -1,0 +1,11 @@
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.4
+python-multipart==0.0.32
+grpcio>=1.83.0,<2
+protobuf==7.36.0
+sqlalchemy==2.0.52
+psycopg2-binary==2.9.12
+websockets==17.0.1
+bcrypt==5.0.0
+PyJWT==2.13.0

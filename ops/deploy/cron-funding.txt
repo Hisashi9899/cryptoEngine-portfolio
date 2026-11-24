@@ -1,0 +1,10 @@
+# FR収集 cron（VPS 追記分のみ・既存の capture/paper/rotate は維持）
+# インストール（VPS 上で冪等）:
+#   bash /opt/cryptoengine/ops/deploy/install-funding-cron.sh
+# 仕様: 標準libのみ・DB不使用・docker不使用・直接HTTPS。trader(5秒loop)よりnice低優先。
+# 保存先: backend/core/trade_logs/funding.jsonl（90日ローテーションは funding_store.py 側）
+
+# Binance 5銘柄（毎時 2,7,12,...分 = 5分毎・0秒オフセット）。銘柄別ロック。
+2-59/5 * * * * /usr/bin/flock -n /tmp/crypto-funding-binance.lock /usr/bin/nice -n 10 /usr/bin/python3 /opt/cryptoengine/ops/scripts/funding_collect.py --exchange binance --symbols BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,DOGEUSDT >> /opt/cryptoengine/ops/logs/cron-funding.log 2>&1
+# Bybit 5銘柄（3分オフセットでBinanceと分散）。銘柄別ロック。
+3-59/5 * * * * /usr/bin/flock -n /tmp/crypto-funding-bybit.lock /usr/bin/nice -n 10 /usr/bin/python3 /opt/cryptoengine/ops/scripts/funding_collect.py --exchange bybit --symbols BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,DOGEUSDT >> /opt/cryptoengine/ops/logs/cron-funding.log 2>&1

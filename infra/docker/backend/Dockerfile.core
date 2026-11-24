@@ -1,0 +1,18 @@
+FROM golang:1.25-alpine AS builder
+
+WORKDIR /app
+COPY backend/core/ .
+# NOTE: 単一ファイル指定（./main.go）ではなくパッケージ全体（.）をビルドすること。
+# CLI メソッドは main.go / vt_paper.go / vt_score.go 等に分散しているため、
+# ./main.go 指定では未定義エラーで失敗する。
+RUN go mod download && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /core .
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates tzdata
+COPY --from=builder /core /usr/local/bin/core
+# v1/v2/v3 廃止後の core コンテナは常駐 daemon ではない。
+# cron の `exec -T core core <cmd>`（capture / vt-paper 等）の実行母体として
+# 起きているだけにする（exec は ENTRYPOINT の影響を受けない）。
+ENTRYPOINT ["sleep"]
+CMD ["infinity"]

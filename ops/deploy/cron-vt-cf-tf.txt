@@ -1,0 +1,7 @@
+# V.T 1時間足コストゲート反実仮想（日曜 05:30 JST）。
+# 5分足 CF（04:30）とは別ジョブ・別出力（cf-tf/）。読み取り専用・発注経路なし。
+# 独立一時コンテナ（1 CPU / 256MB）。所要は約5分。
+# 2026-11-20 の実測で k=2.5/1.0/0 は1時間足では同一（ゲート非拘束）と判明した
+# ため、週次は「非拘束の基準(k=2.5)」と「拘束する k=5」の2点だけ回す。
+# 出力: ops/logs/vt-timeframe-cf.tsv / ops/logs/vt-payoff.tsv / cron-vtcf-tf.log
+30 5 * * 0 /usr/bin/flock -n /tmp/crypto-vtcf-tf.lock /usr/bin/nice -n 10 env VT_TF_KS="2.5 5" bash /opt/cryptoengine/ops/scripts/remote/vt-timeframe-cf.sh >> /opt/cryptoengine/ops/logs/cron-vtcf-tf.log 2>&1

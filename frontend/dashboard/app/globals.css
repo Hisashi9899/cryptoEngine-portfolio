@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #10b981;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(16, 185, 129, 0.07), transparent 60%),
+    radial-gradient(900px 500px at -10% 0%, rgba(59, 130, 246, 0.06), transparent 55%),
+    linear-gradient(180deg, #0b1220 0%, #070c18 100%);
+  background-attachment: fixed;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  .font-mono-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ==========================================================================
+   CryptoEngine login animation system
+   ========================================================================== */
+
+.ce-overlay-in {
+  animation: ceOverlayIn 0.18s ease-out forwards;
+}
+@keyframes ceOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ce-wind {
+  animation: ceWind 0.5s linear infinite;
+}
+@keyframes ceWind {
+  0% {
+    transform: translateX(-240px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(110vw);
+    opacity: 0;
+  }
+}
+
+.ce-past {
+  animation: cePast 0.8s ease-out infinite;
+}
+@keyframes cePast {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.ce-shake {
+  animation: ceShake 0.28s linear infinite;
+}
+@keyframes ceShake {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  18% {
+    transform: translate(3px, -3px) rotate(0.7deg);
+  }
+  36% {
+    transform: translate(-3px, 2px) rotate(-0.7deg);
+  }
+  54% {
+    transform: translate(2px, 3px) rotate(0.5deg);
+  }
+  72% {
+    transform: translate(-2px, -1px) rotate(-0.4deg);
+  }
+}
+
+.ce-flash {
+  animation: ceFlash 0.8s ease-in forwards;
+}
+@keyframes ceFlash {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ce-form-in {
+  opacity: 0;
+  animation: ceFormIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+@keyframes ceFormIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ce-error-in {
+  opacity: 0;
+  animation: ceErrorIn 0.4s ease-out forwards;
+}
+@keyframes ceErrorIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ce-form-in,
+  .ce-overlay-in,
+  .ce-error-in,
+  .ce-wind,
+  .ce-past,
+  .ce-shake,
+  .ce-flash {
+    animation: none;
+    opacity: 1;
+  }
+  .animate-ping {
+    animation: none;
+  }
+}
+
+/* iPhone Safari では background-attachment: fixed がスクロール連動で
+   再ペイントを起こしカクツキの原因になるため、タッチ端末では scroll に。 */
+@media (pointer: coarse) {
+  body {
+    background-attachment: scroll;
+  }
+}

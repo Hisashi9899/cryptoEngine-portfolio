@@ -1,0 +1,32 @@
+name: cryptoEngine
+
+services:
+  api:
+    extends:
+      file: infra/docker/docker-compose.yml
+      service: api
+    build:
+      context: .
+      dockerfile: infra/docker/backend/Dockerfile.api
+    env_file:
+      - infra/config/.env
+    volumes:
+      - ./backend:/app/backend
+
+  core:
+    extends:
+      file: infra/docker/docker-compose.yml
+      service: core
+    build:
+      context: .
+      dockerfile: infra/docker/backend/Dockerfile.core
+    env_file:
+      - infra/config/.env
+
+  db:
+    extends:
+      file: infra/docker/docker-compose.yml
+      service: db
+
+volumes:
+  pgdata:

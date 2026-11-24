@@ -1,0 +1,247 @@
+name: cryptoEngine
+
+services:
+  api:
+    build:
+      context: ../..//
+      dockerfile: infra/docker/backend/Dockerfile.api
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../config/.env
+    environment:
+      # DB_URL が唯一のオーソリティ（api/core の両実装が DB_URL 優先で接続）。
+      # DB_URL は env_file（../config/.env / prod は ../config/.env.prod）が唯一の供給元。
+      # environment: に書くと env_file の実値を上書きし、live DB と不整合を起こすため書かない
+      # （2026-09-15: core が demo_local_password で認証失敗した実績あり。AUTH_ADMIN_* と同じ扱い）。
+      # DB_HOST 等の個別値は DB_URL 未設定時のフォールバック。
+      APP_ENV: "${APP_ENV:-dev}"
+      DB_HOST: "${DB_HOST:-db}"
+      DB_PORT: "${DB_PORT:-5432}"
+      DB_USER: "${DB_USER:-crypto}"
+      DB_PASSWORD: "${DB_PASSWORD:-demo_local_password}"
+      DB_NAME: "${DB_NAME:-crypto_engine}"
+      CORE_GRPC_TARGET: core:50051
+      CRYPTOENGINE_SPREAD_THRESHOLD_RATIO: "0.001"
+      CRYPTOENGINE_IMBALANCE_THRESHOLD: "0.4"
+      CRYPTOENGINE_MIN_TOTAL_VOLUME: "1.0"
+      CRYPTOENGINE_LARGE_ORDER_FACTOR: "5.0"
+      CRYPTOENGINE_TREND_WINDOW: "10"
+      # フィルタは無効で起動（解析結論: cooldown 有害 / gate・vol 効果なし。vol はキー未設定=無効）
+      CRYPTOENGINE_CONFIDENCE_GATE: "0"
+      CRYPTOENGINE_COOLDOWN_SECONDS: "0"
+      CRYPTOENGINE_DEBUG_LOG: "0"
+      EXCHANGE_BASE_URL: "${EXCHANGE_BASE_URL:-https://api.binance.com}"
+      EXCHANGE_TICKER_PATH: "${EXCHANGE_TICKER_PATH:-/api/v3/ticker/24hr}"
+      # 執行対象の取引所。gmo 時は api の Binance ループからの自動発注を抑止する。
+      EXCHANGE_ID: "${EXCHANGE_ID:-binance}"
+      CRYPTOENGINE_ENTRY_MODE: "first_buy"
+      CRYPTOENGINE_MIN_HOLD_SECONDS: "60"
+      CRYPTOENGINE_MAX_HOLD_SECONDS: "300"
+      CRYPTOENGINE_TAKE_PROFIT_USDT: "0.5"
+      CRYPTOENGINE_STOP_LOSS_USDT: "0.5"
+      LOCAL_CAPTURE_MINUTES: "30"
+      BINANCE_API_KEY: "${BINANCE_API_KEY:-}"
+      BINANCE_API_SECRET: "${BINANCE_API_SECRET:-}"
+      # GMO 実残高表示（/api/v1/gmo/balance）は api コンテナ内で core gmo-assets を
+      # 実行するため、api にもキーが必要。core/trader と同一の解決式を使う。
+      # 空の場合は未設定扱いでダッシュボードに案内が出る（起動は止めない）。
+      GMO_API_KEY: "${GMO_API_KEY:-}"
+      GMO_API_SECRET: "${GMO_API_SECRET:-}"
+      AUTO_TRADE_ENABLED: "${AUTO_TRADE_ENABLED:-false}"
+      MAX_POSITION_SIZE_USDT: "${MAX_POSITION_SIZE_USDT:-100}"
+      MAX_DAILY_LOSS_USDT: "${MAX_DAILY_LOSS_USDT:-20}"
+      STOP_ON_LOSS: "${STOP_ON_LOSS:-true}"
+      TRADE_SIZE_USDT: "${TRADE_SIZE_USDT:-50}"
+      TRADE_LOG_PATH: "/app/backend/core/trade_logs/trade_log.csv"
+      # 上記パスにホストの trade_logs をマウントする（core の書き込み先と一致必須）。
+      # マウントが無いとダッシュボードのログ表示が空になる。
+      # AUTH_SECRET は env_file が唯一の供給元。DB_URL と同じ理由で environment: に書かない
+      # （空値で上書きすると起動時 fail-fast に引っかかる）。
+      JWT_ACCESS_TTL_HOURS: "${JWT_ACCESS_TTL_HOURS:-1}"
+      JWT_REFRESH_TTL_DAYS: "${JWT_REFRESH_TTL_DAYS:-30}"
+      # AUTH_ADMIN_* はここに書かない。env_file（../config/.env または
+      # .env.prod）が唯一の供給元。environment に空値を書くと env_file の
+      # 実値を上書きして管理者シードが無効になるため注意。
+    depends_on:
+      db:
+        condition: service_healthy
+      core:
+        condition: service_started
+    # NOTE: 開発用コードマウントは docker-compose.override.yml 側に定義する。
+    # base に置くと prod (base+prod 合成) にまで混入し、イメージ不変性が崩れる。
+    command: >
+      uvicorn backend.api.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+    volumes:
+      # trade_log.csv の共有（core が書き込み、api が読み出す。prod と同一構成）。
+      - ../../backend/core/trade_logs:/app/backend/core/trade_logs
+
+  core:
+    build:
+      context: ../..//
+      dockerfile: infra/docker/backend/Dockerfile.core
+    # ports 公開は廃止（2026-08-24）。gRPC は compose 内部ネットワーク限定。
+    # ホスト / VPS 外から必要な場合は SSH トンネル（ssh -L 50051:core:50051）を使う。
+    env_file:
+      - ../config/.env
+    environment:
+      # DB_URL が唯一のオーソリティ（api と同じ）。env_file（../config/.env /
+      # prod は ../config/.env.prod）が唯一の供給元。environment: に書くと上書きして
+      # live DB と不整合を起こすため書かない（api と同じ理由）。
+      APP_ENV: "${APP_ENV:-dev}"
+      CRYPTOENGINE_SPREAD_THRESHOLD_RATIO: "0.001"
+      CRYPTOENGINE_IMBALANCE_THRESHOLD: "0.4"
+      CRYPTOENGINE_MIN_TOTAL_VOLUME: "1.0"
+      CRYPTOENGINE_LARGE_ORDER_FACTOR: "5.0"
+      CRYPTOENGINE_TREND_WINDOW: "10"
+      # フィルタは無効で起動（解析結論: cooldown 有害 / gate・vol 効果なし。vol はキー未設定=無効）
+      CRYPTOENGINE_CONFIDENCE_GATE: "0"
+      CRYPTOENGINE_COOLDOWN_SECONDS: "0"
+      CRYPTOENGINE_DEBUG_LOG: "0"
+      EXCHANGE_BASE_URL: "${EXCHANGE_BASE_URL:-https://api.binance.com}"
+      EXCHANGE_TICKER_PATH: "${EXCHANGE_TICKER_PATH:-/api/v3/ticker/24hr}"
+      BINANCE_API_KEY: "${BINANCE_API_KEY:-}"
+      BINANCE_API_SECRET: "${BINANCE_API_SECRET:-}"
+      # GMO コイン (EXCHANGE_ID=gmo 時に使用。GMO_API_* 優先、未設定時は BINANCE_* にフォールバック)
+      EXCHANGE_ID: "${EXCHANGE_ID:-binance}"
+      GMO_API_KEY: "${GMO_API_KEY:-}"
+      GMO_API_SECRET: "${GMO_API_SECRET:-}"
+      # 監査ログの永続化先。env_file の相対パス指定を上書きし、マウント先に固定する。
+      # （相対パスのままだとコンテナ内の一時 FS に書かれて約定記録が消える）
+      TRADE_LOG_PATH: "/trade_logs/trade_log.csv"
+      # 収集データの永続化先（capture-daily / paper の出力先）。ホストの
+      # backend/core/trade_logs/ にマウントし、dump-remote.sh が回収する。
+      ORDERBOOK_LOG_DIR: "${ORDERBOOK_LOG_DIR:-/trade_logs}"
+      # paper 採点のラベル専用緩和（発注しないため取引リスクゼロ）。
+      # 方向 2/3 確認＋S4 入場ゲート 0.45 で擬似ラベルを増量する。
+      # 低確信分は較正 bin が隔離する。取引エンジン側は不変。
+      PAPER_MIN_CONFIRM: "2"
+      PAPER_ENTER_CONF: "0.45"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ../../backend/core/trade_logs:/trade_logs
+
+  # trader サービスは 2026-09-26 に削除（v1/v2/v3 引退に伴う残骸整理）。
+  # 実弾執行は vtlive のみ。開始・停止は下記 vtlive の手順を使う。
+
+  # vtlive は V.Tエンジンの実弾執行ループ（GMO現物・成行・常駐）。
+  # profile 式のため通常の up では起動しない。開始・停止は明示的に行う。
+  #   開始: docker compose --profile trading up -d vtlive
+  #   停止: docker compose stop vtlive
+  # 安全装置: --live が無い限り発注しない（dry-run 意図記録のみ）。
+  # 実弾時は --balance-jpy / --risk-fraction / --max-daily-loss-jpy で
+  # 1発・日次上限を縛る。下の既定は小口検証用（残高の20%/発・日次500円）。
+  # 起動時に実残高を取得して上書きするため、--balance-jpy は予備値。
+  # 本格投入時は値を上げ、停止は `stop vtlive` のみ（trader は廃止済み）。
+  #
+  # 2026-11-20 の実測（35日連続 10/17..11/20、taker、balance 10万）に基づく設定:
+  #   - BCH は deny 有無どちらでも全窓負け（−924 / −425）→ symbols から除外。
+  #   - k=2.5 は 35日で LINK 1件・LTC 0件。ATR 0.16% に対し 0.25% を要求し
+  #     ほぼ全入口を棄却するため、データが集まらない → k=1.0 へ。
+  #   - static deny は LINK+LTC で逆効果（PF 1.316→1.261、純益 +296→+138）。
+  #     効果の実体 rci_turn_down は BCH −724 / LTC +1092 と銘柄依存のため、
+  #     方向だけの deny では表現できない → --pattern-allow-file を外す。
+  #   - LINK+LTC / k=1.0 / deny 無し: 40件 PF1.316 CI[0.482,3.401] 純益+296。
+  #     PF>1.2 は満たすが CI>1.0 と件数200は未達（継続観測）。
+  #   - 発注サイズは 100,000 円基準（研究と同一）。5,000 円では LTC の最小
+  #     0.1枚（約671円）に届かず、広スプレッド時の入口が 0枚で落ちる
+  #     （5,000円: 25件/35日 +5.9、100,000円: 40件/35日 +296）。
+  #     dry-run は実残高を取得しない（live 時のみ applyBalances）ため、
+  #     この値がそのまま検証用の基準になる。
+  #   - max-daily-loss は比率10%相当の 10,000 円。500 円のままだと dry-run は
+  #     比率スケールが効かず2敗で当日停止し、研究と条件がずれる。
+  vtlive:
+    profiles: ["trading"]
+    image: cryptoengine-core:latest
+    # イメージ既定 ENTRYPOINT は sleep（exec 母体用）。実行時は core に戻す。
+    entrypoint: ["core"]
+    command: >
+      vt-live
+      --symbols=LINK,LTC
+      --allow-symbols=LTC
+      --bars=300
+      --balance-jpy=100000
+      --risk-fraction=0.2
+      --max-positions=4
+      --max-daily-loss-jpy=10000
+      --max-daily-loss-ratio=0.1
+      --sl-ratio=0.02
+      --max-hold-sec=43200
+      --imbalance-min-hold-sec=300
+      --exit-confirm-votes=2
+      --margin-fallback-mult=2.0
+      --min-confidence=0
+      --short-rsi-floor=40.0
+      --squeeze-gate=true
+      --grid-enabled=true
+      --grid-risk-fraction=0.05
+      --grid-max-positions=1
+      --tape-poll-sec=10
+      --maker-entries=true
+      --maker-timeout-sec=900
+      --maker-require-absorb=false
+      --maker-exit-tp=true
+      --maker-exit-timeout-sec=120
+      --maker-poll-sec=30
+      --cost-gate-k=1.0
+      --cost-gate-fee-mode=taker
+      --entry-cooldown-sec=300
+      --corr-isolation=true
+      --margin
+    env_file:
+      - ../config/.env
+    environment:
+      APP_ENV: "${APP_ENV:-dev}"
+      EXCHANGE_ID: "${EXCHANGE_ID:-binance}"
+      GMO_API_KEY: "${GMO_API_KEY:-}"
+      GMO_API_SECRET: "${GMO_API_SECRET:-}"
+      TRADE_LOG_PATH: "/trade_logs/trade_log.csv"
+      ORDERBOOK_LOG_DIR: "${ORDERBOOK_LOG_DIR:-/trade_logs}"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ../../backend/core/trade_logs:/trade_logs
+
+  frontend:
+    build:
+      context: ../..//
+      dockerfile: infra/docker/frontend/Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      # ブラウザは same-origin（:3001）で /api/* を呼び、Next の rewrites が
+      # サーバーサイドで api サービス（:8000）へプロキシする。
+      # NEXT_PUBLIC_API_URL は設定しない（設定するとブラウザから API 直接アクセスになり CORS 問題が出る）。
+      API_PROXY_TARGET: "http://api:8000"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      # prod は --env-file .env.prod で強パスワードに上書きすること。
+      # 注意: POSTGRES_PASSWORD は初回 volume 作成時のみ有効。既存 volume への
+      # 変更は ALTER USER で行うこと（詳細は infra/config/.env.prod の注記参照）。
+      POSTGRES_USER: "${POSTGRES_USER:-crypto}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-demo_local_password}"
+      POSTGRES_DB: "${POSTGRES_DB:-crypto_engine}"
+    # ports 公開は廃止（2026-08-24）。Postgres は compose 内部ネットワーク限定。
+    # psql 等は docker compose exec db psql -U crypto crypto_engine を使う。
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-crypto} -d ${POSTGRES_DB:-crypto_engine}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
