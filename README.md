@@ -1,12 +1,14 @@
 # CryptoEngine
 
+[![CI](https://github.com/Hisashi9899/cryptoEngine-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/Hisashi9899/cryptoEngine-portfolio/actions/workflows/ci.yml)
+
 **A 24/7 event-driven trading and execution platform — built for deterministic state, fail-safe operation, and low-footprint deployment on a single VPS.**
 
 CryptoEngine is an end-to-end system rather than a collection of trading scripts. It ingests live market data, evaluates a technical strategy on closed bars, applies cost- and risk-aware execution gates, records every decision, and exposes the result through an API and a real-time dashboard. The same codebase supports **dry-run**, **historical replay**, and **live execution**, with live trading disabled unless an explicit safety switch is provided.
 
 The project is intentionally opinionated about reliability: the execution loop owns all mutable state in one goroutine, every order passes through layered fail-safes, and the system keeps running when the database or exchange is temporarily unavailable.
 
-> **Portfolio snapshot.** This public repository has been sanitized: no exchange credentials, account data, private keys, webhook URLs, or production host identifiers are included. Live execution is disabled by default.
+> **Portfolio snapshot.** This public repository has been sanitized: no exchange credentials, account data, private keys, webhook URLs, or production host identifiers are included. Live execution is disabled by default. It is published for technical evaluation only; see [LICENSE](LICENSE).
 
 ---
 
@@ -290,7 +292,7 @@ The demo runs entirely on your machine. **No exchange API keys, real funds, or l
 ### 1. Clone and configure
 
 ```bash
-git clone <repository-url> cryptoengine
+git clone https://github.com/Hisashi9899/cryptoEngine-portfolio.git cryptoengine
 cd cryptoengine/infra/docker
 
 # Create a local environment file from the safe example.
@@ -455,7 +457,12 @@ The GitHub Actions workflow (`.github/workflows/ci.yml`) runs the Go and Python 
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+**Evaluation License — see [LICENSE](LICENSE).**
+
+This repository is published for technical evaluation only. Commercial use,
+production use, redistribution, modification, and derivative works require
+prior written permission from the copyright holder. Third-party components
+remain under their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ---
 
