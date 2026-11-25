@@ -10,6 +10,8 @@ The project is intentionally opinionated about reliability: the execution loop o
 
 > **Portfolio snapshot.** This public repository has been sanitized: no exchange credentials, account data, private keys, webhook URLs, or production host identifiers are included. Live execution is disabled by default. It is published for technical evaluation only; see [LICENSE](LICENSE).
 
+**Available for contract work** — production systems with CI/CD, backend and platform engineering, and fractional engineering. [Profile and packages on Contra](https://contra.com/neutron_d0wbklm2/work).
+
 ## Screenshots
 
 **[Open the live demo](https://hisashi9899.github.io/cryptoEngine-portfolio/)** — a static, client-side build with deterministic demo data. No account, API key, or backend is required. Use the **JA / EN** toggle in the top-right corner.
