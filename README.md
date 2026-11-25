@@ -75,6 +75,36 @@ For a CTO or founder evaluating end-to-end ownership, this repository shows:
 
 ---
 
+## Why this is unusual
+
+Most trading bots stop at "generate a signal and place an order." CryptoEngine is built around the questions that appear after that:
+
+- **What happens if the process restarts with an open position?**
+  The coordinator is the only writer. Positions and daily P&L are persisted as atomic snapshots and reconciled on restart, so the engine does not re-enter blindly.
+- **What happens if the exchange times out mid-order?**
+  Retryable faults (timeouts, transient 5xx) are retried with bounded backoff; business rejections fail fast. Maintenance windows and lot-size validation happen before the request, so retries do not create duplicate orders.
+- **What if the signal is technically right but the trade loses after fees and spread?**
+  A cost gate blocks entries unless expected movement covers fees and spread. If ATR is unknown, the gate fails closed.
+- **How do you know a strategy change is real, not noise?**
+  Historical replay, bootstrap confidence intervals, acceptance gates, and ablation studies run before capital is exposed.
+- **How do you run 24/7 on a 2 GB VPS without silent failure?**
+  A single-writer loop, atomic state, append-only logs, heartbeat/watchdog, resource limits, and a deploy script that refuses to ship secrets.
+
+The combination is the point: deterministic state, cost-aware execution, explicit failure semantics, quantitative research, and low-footprint operations in one codebase. That is a different engineering problem from a single-file bot.
+
+| Hard problem | How it is handled | Where to look |
+|---|---|---|
+| Restart with open positions | Single-writer coordinator, atomic snapshots, resume reconciliation | `backend/core/usecase/trading/`, `backend/core/infrastructure/repository/` |
+| Exchange timeout / duplicate orders | Retryable vs fatal errors, bounded backoff, maintenance guard, lot-size validation | `backend/core/usecase/trading/gmo_executor.go` |
+| Fees and spread eroding the edge | Cost gate with fail-closed behavior | `backend/core/usecase/trading/gmo_affordability.go` |
+| Strategy changes that are just noise | Replay, bootstrap CI, acceptance gate, ablation | `backend/core/backtest/`, `ops/deploy/pf-gate.sh` |
+| 24/7 operation on a small VPS | Watchdog, heartbeat, resource limits, secret-checked deploy | `ops/deploy/watchdog.py`, `ops/deploy/deploy-to-vps.sh` |
+| End-to-end ownership | Go core, FastAPI, Next.js, CI | `backend/`, `frontend/dashboard/`, `.github/workflows/ci.yml` |
+
+This is why the repository is structured as a production service — not a strategy script with a dashboard bolted on.
+
+---
+
 ## Key Architectural Highlights
 
 ### 1. Event-driven core with a single-writer state machine
