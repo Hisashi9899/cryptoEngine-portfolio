@@ -114,6 +114,18 @@ export default function Sidebar() {
             <LogOut className="h-3.5 w-3.5" />
             {tr("ログアウト", "Log out")}
           </button>
+
+          <a
+            href="https://contra.com/neutron_d0wbklm2/work"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 block border-t border-white/5 pt-3 text-[11px] leading-relaxed text-slate-500 transition-colors hover:text-slate-300"
+          >
+            Built by <span className="font-medium text-slate-300">Hisashi Aoki</span>
+            <span className="mt-0.5 block text-emerald-400/80">
+              {tr("制作の依頼はこちら →", "Hire me on Contra →")}
+            </span>
+          </a>
         </div>
       </div>
     </aside>

@@ -171,6 +171,26 @@ export default function LoginPage() {
         <p className="ce-form-in mt-6 text-center text-[11px] text-slate-600">
           © {new Date().getFullYear()} CryptoEngine · Auto Trading Engine
         </p>
+        <p className="mt-2 text-center text-[11px] text-slate-600">
+          Built by{" "}
+          <a
+            href="https://contra.com/neutron_d0wbklm2/work"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-slate-400 underline decoration-slate-700 underline-offset-2 transition-colors hover:text-emerald-300"
+          >
+            Hisashi Aoki
+          </a>{" "}
+          ·{" "}
+          <a
+            href="https://hisashi9899.github.io/memeShift-portfolio/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-500 transition-colors hover:text-slate-300"
+          >
+            other work
+          </a>
+        </p>
       </div>
 
       {igniting && <LoginSuccessOverlay />}
