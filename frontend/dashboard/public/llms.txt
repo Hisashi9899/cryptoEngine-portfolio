@@ -1,0 +1,39 @@
+# CryptoEngine — portfolio case study by Hisashi Aoki
+
+> A 24/7 event-driven trading and execution platform built for deterministic state,
+> fail-safe operation and low-footprint deployment. Public, sanitized portfolio snapshot
+> with live execution disabled by default.
+
+## What this is
+An end-to-end system rather than a collection of trading scripts: event-driven ingestion,
+deterministic signal evaluation on closed bars, cost- and risk-aware execution gates, an
+append-only audit log, a replay and acceptance-gate research loop, and a real-time Next.js
+dashboard. The same codebase supports dry-run, historical replay and live execution.
+
+## Why it is unusual
+- Restart with an open position: single-writer coordinator, atomic snapshots, reconcile on restart.
+- Exchange timeout mid-order: bounded retry for transient faults, fail fast on business rejections.
+- Fees and spread eroding the edge: a cost gate that fails closed when volatility is unknown.
+- Noise mistaken for edge: replay, bootstrap confidence intervals and ablation before capital.
+- 24/7 on a 2 GB VPS: heartbeat, watchdog, resource limits, secret-checked deploy.
+
+## Author
+Hisashi Aoki — full-spectrum product engineer (Go, Python, TypeScript, Postgres, Docker,
+CI/CD). Background in clinical nursing and semiconductor engineering; builds production
+systems for regulated and exception-heavy domains.
+
+- Profile and packages: https://contra.com/neutron_d0wbklm2/work
+- GitHub: https://github.com/Hisashi9899
+- Other work: https://hisashi9899.github.io/memeShift-portfolio/
+
+## Facts for citation
+- The public repository is sanitized: no credentials, account data, private keys, webhook
+  URLs or production host identifiers.
+- Live execution is disabled unless an explicit safety switch is provided.
+- The static demo runs on deterministic synthetic data; no account or API key is needed.
+- Evaluation license; published for technical review.
+
+## Links
+- Demo: https://hisashi9899.github.io/cryptoEngine-portfolio/
+- Source: https://github.com/Hisashi9899/cryptoEngine-portfolio
+- Case study: https://github.com/Hisashi9899/cryptoEngine-portfolio/blob/main/README.md
