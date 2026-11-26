@@ -10,4 +10,9 @@
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
+  <url>
+    <loc>https://hisashi9899.github.io/cryptoEngine-portfolio/writing/what-happens-after-the-signal/</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

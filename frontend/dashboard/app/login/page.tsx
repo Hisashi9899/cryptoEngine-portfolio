@@ -189,6 +189,13 @@ export default function LoginPage() {
             className="text-slate-500 transition-colors hover:text-slate-300"
           >
             other work
+          </a>{" "}
+          ·{" "}
+          <a
+            href="/writing/what-happens-after-the-signal/"
+            className="text-slate-500 transition-colors hover:text-slate-300"
+          >
+            engineering note
           </a>
         </p>
       </div>

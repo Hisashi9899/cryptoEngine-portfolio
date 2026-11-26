@@ -16,9 +16,11 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isLogin = normalizePath(pathname) === "/login";
+  const normalized = normalizePath(pathname);
+  const isLogin = normalized === "/login";
+  const isBarePage = isLogin || normalized.startsWith("/writing");
 
-  if (isLogin) {
+  if (isBarePage) {
     return <>{children}</>;
   }
 
