@@ -20,4 +20,9 @@
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://hisashi9899.github.io/cryptoEngine-portfolio/writing/building-an-eval-harness/</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
